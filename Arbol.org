@@ -1,0 +1,187 @@
+#+title: Árbol generador de menor costo
+
+#+options: toc:nil
+#+latex_header: \usepackage{listings}
+#+latex_header: \lstalias{ipython}{python}
+#+latex_header: \lstset{basicstyle=\small\ttfamily, frame=single}
+
+#+latex_header: \usepackage{bera}
+
+#+property: header-args:ipython :exports both :cache yes :session arbol :results raw drawer
+
+
+* Problema
+Supongamos que a cada arista de la gráfica completa \(K_{n}\) se le
+asigna un valor ("peso"). Si a cada subgrafica le asignamos un peso
+igual a la suma de los pesos de sus aristas, consideraremos el problema
+de encontrar el árbol generador de menor peso.
+
+* Algoritmo de Kruskal
+
+El algoritmo de Kruscal consiste en escoger sucesivamente las aristas
+más baratas con tal de que no formen ciclos con las aristas escogidas
+previamente. En una gráfica con \(n\) vértices se puede demostrar qie
+tal algoritmo termina cuando hayamos escogido\(n-1\) aristas, y que el
+árbol construido es tal que tiene el costo minimo.
+
+* Implementación en Python
+
+
+
+Primeramente vamos a importar las bibliotecas que vamos a utilizar.
+
+#+begin_src ipython
+import networkx as nx
+import matplotlib.pyplot as plt
+from random import random as random
+from scipy.spatial.distance import euclidean
+#+end_src
+
+#+RESULTS[2a253d47c089a054eb3655b60d8ccea8fad581c9]:
+:results:
+# Out[3]:
+:end:
+
+A continuación definiremos una gráfica aleatoria con 10 vértices.
+
+#+begin_src ipython
+g=nx.gnp_random_graph(10,0.2)
+#+end_src
+
+#+RESULTS[6cb25f08ff5c48547b3f4dfee8e011fbbf4547c2]:
+:results:
+# Out[24]:
+:end:
+
+Veremos si nuestra gráfica es un bosque:
+#+begin_src ipython
+nx.is_forest(g), nx.is_connected(g)
+#+end_src
+
+#+RESULTS[e7d1dbb3a296c52111081a2873e11b0c5e1bcb99]:
+:results:
+# Out[25]:
+: (True, False)
+:end:
+
+A continuacón dibujaremos esta gráfica:
+#+begin_src ipython
+nx.draw(g, with_labels=True)
+#+end_src
+
+#+RESULTS[7a5a44e71604efbb3ac02fd3863ef7628a5be23d]:
+:results:
+# Out[26]:
+[[file:./obipy-resources/2479fnB.png]]
+:end:
+
+Calcularemos las componentes conexas de la gráfica:
+#+begin_src ipython
+list(nx.connected_components(g))
+#+end_src
+
+#+RESULTS[fd43bac86ab4e6adb6ece858cb2c922a37acadb0]:
+:results:
+# Out[27]:
+: [{0, 1, 3, 4, 5, 6, 7}, {2}, {8, 9}]
+:end:
+
+Veamos :
+#+begin_src ipython
+nx.node_connected_component(g,2)
+#+end_src
+
+#+RESULTS[5dbb8a5e23a82b97e43b14101c8f6ff99694deeb]:
+:results:
+# Out[30]:
+: {2}
+:end:
+
+Dibujar arbol
+
+* Puntos en el plano
+
+Si tenemos dos listas de números de tamaño =n= podemos dibujar n
+puntos en e plano,tomado las coordenadas =x= de la primera lista y las
+coordenadas =y= de la segunda
+
+#+begin_src ipython
+plt.plot([1,1,2],[1,2,3], 'bx')
+plt.axis([0,3,0,4])
+plt.show()
+#+end_src
+
+#+RESULTS[be82931657c34e74ee0394abc3a82ea6324e917b]:
+:results:
+# Out[35]:
+[[file:./obipy-resources/2479GGU.png]]
+:end:
+
+Vamos a definir una función que dibuje =n= puntos en el plano
+aleatoriamente.
+
+#+begin_src ipython
+def puntos_en_el_plano(n):
+    listax=[]
+    listay=[]
+    for i in range(n):
+        listax.append(random())
+        listay.append(random())
+    return listax, listay
+#+end_src
+
+#+RESULTS[1cddae6365e0c7df4eef77ad1b5bc8bbf58f96c2]:
+:results:
+# Out[36]:
+:end:
+
+#+begin_src ipython
+puntos=puntos_en_el_plano(50)
+#+end_src
+
+#+RESULTS[9ff8894398a2a07a6c3e77984fe46197b54683d8]:
+:results:
+# Out[40]:
+:end:
+
+Gráficar puntos
+#+begin_src ipython
+plt.plot(*puntos, 'ro')
+plt.show
+#+end_src
+
+#+RESULTS[2ec732e4156208eb3713f9983edce42cc8cd8e51]:
+:results:
+# Out[39]:
+: <function matplotlib.pyplot.show(*args, **kw)>
+[[file:./obipy-resources/2479gag.png]]
+:end:
+
+Hagamos una función que a partir de dos listas produzca el dibujo.
+#+begin_src ipython
+def dibujo_puntos(listax, listay):
+    plt.plot(listax,listay,'ro')
+    plt.axis([-0.1,1.1,-0.1,1.1])
+    plt.gca().set_aspect('equal')
+    plt.show
+#+end_src
+
+#+RESULTS[3828849c876241ccaebd41423ca77550199a398a]:
+:results:
+# Out[41]:
+:end:
+
+#+begin_src ipython
+dibujo_puntos(*puntos)
+#+end_src
+
+#+RESULTS[274d1e4a2e4c1e9a72c9f464a39ff8637dd52977]:
+:results:
+# Out[42]:
+[[file:./obipy-resources/2479tkm.png]]
+:end:
+
+
+# Local Variables:
+# org-confirm-babel-evaluate: nil
+# End:
