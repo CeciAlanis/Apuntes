@@ -1,3 +1,4 @@
+
 #+title: Árbol generador de menor costo
 
 #+options: toc:nil
@@ -39,7 +40,7 @@ from scipy.spatial.distance import euclidean
 
 #+RESULTS[2a253d47c089a054eb3655b60d8ccea8fad581c9]:
 :results:
-# Out[3]:
+# Out[1]:
 :end:
 
 A continuación definiremos una gráfica aleatoria con 10 vértices.
@@ -50,7 +51,7 @@ g=nx.gnp_random_graph(10,0.2)
 
 #+RESULTS[6cb25f08ff5c48547b3f4dfee8e011fbbf4547c2]:
 :results:
-# Out[24]:
+# Out[2]:
 :end:
 
 Veremos si nuestra gráfica es un bosque:
@@ -60,8 +61,8 @@ nx.is_forest(g), nx.is_connected(g)
 
 #+RESULTS[e7d1dbb3a296c52111081a2873e11b0c5e1bcb99]:
 :results:
-# Out[25]:
-: (True, False)
+# Out[11]:
+: (False, True)
 :end:
 
 A continuacón dibujaremos esta gráfica:
@@ -113,8 +114,8 @@ plt.show()
 
 #+RESULTS[be82931657c34e74ee0394abc3a82ea6324e917b]:
 :results:
-# Out[35]:
-[[file:./obipy-resources/2479GGU.png]]
+# Out[12]:
+[[file:./obipy-resources/2227sWn.png]]
 :end:
 
 Vamos a definir una función que dibuje =n= puntos en el plano
@@ -132,7 +133,7 @@ def puntos_en_el_plano(n):
 
 #+RESULTS[1cddae6365e0c7df4eef77ad1b5bc8bbf58f96c2]:
 :results:
-# Out[36]:
+# Out[13]:
 :end:
 
 #+begin_src ipython
@@ -141,7 +142,7 @@ puntos=puntos_en_el_plano(50)
 
 #+RESULTS[9ff8894398a2a07a6c3e77984fe46197b54683d8]:
 :results:
-# Out[40]:
+# Out[14]:
 :end:
 
 Gráficar puntos
@@ -152,9 +153,9 @@ plt.show
 
 #+RESULTS[2ec732e4156208eb3713f9983edce42cc8cd8e51]:
 :results:
-# Out[39]:
+# Out[15]:
 : <function matplotlib.pyplot.show(*args, **kw)>
-[[file:./obipy-resources/2479gag.png]]
+[[file:./obipy-resources/22275gt.png]]
 :end:
 
 Hagamos una función que a partir de dos listas produzca el dibujo.
@@ -168,7 +169,7 @@ def dibujo_puntos(listax, listay):
 
 #+RESULTS[3828849c876241ccaebd41423ca77550199a398a]:
 :results:
-# Out[41]:
+# Out[16]:
 :end:
 
 #+begin_src ipython
@@ -177,11 +178,138 @@ dibujo_puntos(*puntos)
 
 #+RESULTS[274d1e4a2e4c1e9a72c9f464a39ff8637dd52977]:
 :results:
-# Out[42]:
-[[file:./obipy-resources/2479tkm.png]]
+# Out[17]:
+[[file:./obipy-resources/2227Grz.png]]
+:end:
+
+
+* Distancia Euclidiana
+
+#+begin_src ipython
+a=(0, 0)
+b=(3, 5)
+euclidean(a,b)
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[19]:
+: 5.830951894845301
+:end:
+
+* Gráfica con Pesos
+
+En =networkx= se pueden considerar gráficas donde cada arista tiene un
+peso, por ejemplo:
+
+#+begin_src ipython
+g= nx.Graph()
+g.add_nodes_from(["a","b","c"])
+g.add_weighted_edges_from([("a","b",2),("a","c",0.5)])
+position=nx.spring_layout(g)
+nx.draw_networkx_edge_labels(g, pos=position)
+nx.draw(g, with_labels=True, pos=position)
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[23]:
+[[file:./obipy-resources/222740C.png]]
+:end:
+
+Definimos ahora una función que, dadas dos listas de números, produzca
+una gráfica con pesos donde los vértices sean los puntos y el peso
+entre dos puntos cualesquiera la distancia euclidiana.
+
+#+begin_src ipython
+def grafica_euclidiana(listax,listay):
+    G = nx.Graph()
+    n = len(listax)
+    vertices = []
+    for i in range(n):
+        vertices.append((listax[i], listay[i]))
+    aristas = []
+    for i in range(n):
+        for j in range (i+1,n):
+            u = vertices[i]
+            v = vertices[j]
+            aristas.append((u,v,euclidean(u,v)))
+    G.add_nodes_from(vertices)
+    G.add_weighted_edges_from(aristas)
+    return G
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[27]:
+:end:
+
+#+begin_src ipython
+g= grafica_euclidiana(*puntos)
+#+end_src
+
+#+RESULTS[ab1a0526e8b2b8f30c22835639aec75662ab4651]:
+:results:
+# Out[28]:
+:end:
+
+#+begin_src ipython
+def arbol_menor_costo(G):
+    T=nx.Graph()
+    T.add_nodes_from(G)
+    aristas=list(G.edges(data=True))
+    aristas=sorted(aristas,key=lambda e: -e[2]['weight'])
+    while len(T.edges())< len(G)-1:
+        e=aristas.pop()
+        if not(e[0] in nx.node_connected_component(T, e[1])):
+            T.add_edge(e[0],e[1])
+    return T
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[29]:
+:end:
+
+#+begin_src ipython
+plt.figure(figsize=(10,10))
+t=arbol_menor_costo(g)
+nx.draw(t)
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[30]:
+[[file:./obipy-resources/2227F_I.png]]
+:end:
+
+
+#+begin_src ipython
+plt.figure(figsize=(10,10))
+
+for v in t.nodes():
+    plt.plot(v[0],v[1],'ro')
+
+for e in t.edges():
+    p1=e[0]
+    p2=e[1]
+    plt.plot([p1[0],p2[0]],[p1[1],p2[1]],color='blue')
+
+plt.axis([-0.1,1.1,-0.1,1.1])
+plt.gca().set_aspect('equal')
+
+plt.show()
+#+end_src
+
+#+RESULTS:
+:results:
+# Out[33]:
+[[file:./obipy-resources/2227sdb.png]]
 :end:
 
 
 # Local Variables:
 # org-confirm-babel-evaluate: nil
 # End:
+
+
